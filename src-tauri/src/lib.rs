@@ -26,11 +26,19 @@ impl Game {
     }
 
     pub fn increase(&mut self) {
-        self.value += 1;
+        self.value = if self.value == 100 {
+            0
+        } else {
+            self.value + 1
+        }
     }
 
     pub fn decrease(&mut self) {
-        self.value -= 1;
+        self.value = if self.value == 0 {
+            100
+        } else {
+            self.value - 1
+        }
     }
 
     pub fn get_value(&self) -> usize {
