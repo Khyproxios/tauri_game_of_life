@@ -1,4 +1,5 @@
 pub mod game;
+pub mod board;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]

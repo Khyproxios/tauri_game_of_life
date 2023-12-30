@@ -1,30 +1,30 @@
 use tauri::State;
 
-use crate::GameManager;
+use crate::{game, GameManager};
 
 #[tauri::command]
-pub fn increase(game_manager: State<'_, GameManager>) {
+pub fn update(game_manager: State<'_, GameManager>) {
     game_manager
         .mutex
         .lock()
         .unwrap()
-        .increase();
+        .update();
 }
 
 #[tauri::command]
-pub fn decrease(game_manager: State<'_, GameManager>) {
+pub fn reset(game_manager: State<'_, GameManager>) {
     game_manager
         .mutex
         .lock()
         .unwrap()
-        .decrease();
+        .reset();
 }
 
 #[tauri::command]
-pub fn get_value(game_manager: State<'_, GameManager>) -> usize {
+pub fn get_board(game_manager: State<'_, GameManager>) -> game::Board {
     game_manager
         .mutex
         .lock()
         .unwrap()
-        .value
+        .get_board()
 }

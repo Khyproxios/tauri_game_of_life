@@ -35,10 +35,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": true,
-        "title": "game_of_life",
-        "width": 800,
-        "height": 600
+        "resizable": false,
+        "title": "Conway's Game of Life",
+        "width": 1280,
+        "height": 800
       }
     ]
   }
