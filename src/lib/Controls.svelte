@@ -1,28 +1,53 @@
 <script>
-    import {spring} from 'svelte/motion';
     import {invoke} from "@tauri-apps/api/tauri";
+    import {aliveCount, board, speed} from "../store.js";
 
     let runGame = false;
     let width = 10;
     let height = 10;
-    let speed = 1;
 
-    /*
-    TODO: Find out how to use the animations with the inputs
+    let clearInterval;
 
-    const displayed_count = spring();
-    $: displayed_count.set(value);
-    $: offset = modulo($displayed_count, 1);
+    const runUpdate = async () => {
+        if (!runGame) {
+            return;
+        }
 
-     */
+        await board.update();
 
-    const toggleRunGame = async () => runGame = !runGame;
+        let interval = 1000 / $speed;
+        console.log('interval:', interval);
+        clearInterval = setTimeout(runUpdate, interval);
+    };
+
+    const toggleRunGame = async () => {
+        runGame = !runGame;
+
+        if (runGame) {
+            await runUpdate();
+        } else if (clearInterval) {
+            clearInterval();
+        }
+    }
+
+    const nextStep = async () => {
+        await invoke('update')
+            .then(async () => board.set(await invoke('get_board')))
+            .then(async () => aliveCount.set(await invoke('get_alive_count')));
+    };
 
     const resetGame = async () => {
         runGame = false;
         width = 10;
         height = 10;
-        speed = 1;
+        speed.set(1);
+
+        await board.reset();
+
+        if (clearInterval) {
+            console.log('clearing the interval');
+            clearInterval();
+        }
     };
 
     const changeWidth = async (e) => {
@@ -42,97 +67,48 @@
     };
 
     const changeSpeed = async (e) => {
-        const value = e.target.value;
+        console.log('changeSpeed:', e)
+        const value = parseInt(e.target.value);
 
         if (value && 0.1 < value && value <= 10) {
-            speed = value;
+            speed.set(value);
+            await runUpdate();
         }
     };
-
-    /*
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-
-    const increase = async () => {
-        await invoke("increase").then(() => getValue());
-    };
-
-    const decrease = async () => {
-        await invoke("decrease").then(() => getValue());
-    };
-
-    const getValue = async () => {
-        value = await invoke("get_value")
-    };
-     */
 </script>
 
-<form class="mt-2 ml-2 col-3 h-100">
-  <div class="form-group mb-1">
+<div class="grid-span-2 h-full w-full text-peach">
+  <div class="block rounded bg-mantle m-2 p-2">
     <!--  Start, Stop, Reset  -->
     {#if runGame}
-      <button on:click={toggleRunGame}
-              class="btn btn-outline-primary btn-sm btn-dark w-25 text-sm-start">
-        Pause
-      </button>
+      <button on:click={toggleRunGame} class="rounded w-16 h-8"> Pause</button>
     {:else}
-      <button on:click={toggleRunGame}
-              class="btn btn-outline-primary btn-sm btn-dark w-25 text-sm-start">
-        Play
-      </button>
+      <button on:click={toggleRunGame} class="rounded w-16 h-8"> Play</button>
     {/if}
 
-    <button on:click={resetGame}
-            class="btn btn-outline-primary btn-sm btn-dark w-25 text-sm-start">
-      Reset
-    </button>
+    <button on:click={nextStep} class="rounded w-16 h-8">󰙢 Step</button>
+
+    <button on:click={resetGame} class="rounded w-16 h-8"> Reset</button>
   </div>
 
   <!--  Horizontal & Vertical Counts  -->
-  <div class="form-group mb-1">
-    <label class="text-light w-25 mb-2 text-sm-start"
-           for="numWidth">
-      Width
-    </label>
-    <input id="numWidth"
-           type="number"
-           class="form-control-sm text-bg-dark w-50 mb-2"
-           on:change={changeWidth}
-           min="8"
-           max="1024"
-           value={width}
-    />
-    <label for="numHeight"
-           class="text-light w-25 text-sm-start">
-      Height
-    </label>
-    <input id="numHeight"
-           type="number"
-           class="form-control-sm text-bg-dark w-50"
-           on:change={changeHeight}
-           min="8"
-           max="1024"
-           value={height}
-    />
+  <div class="block rounded bg-mantle m-2 p-2 flex flex-row">
+    <label class="rounded w-16 h-8" for="numWidth">Width</label>
+    <input id="numWidth" type="number" class="rounded w-16 h-8 text-center" on:change={changeWidth} min="8" max="1024"
+           value={width}/>
+    <label for="numHeight" class="rounded w-16 h-8">Height</label>
+    <input id="numHeight" type="number" class="rounded w-16 h-8 text-center" on:change={changeHeight} min="8"
+           max="1024" value={height}/>
   </div>
 
-  <div class="form-group mb-1">
+  <div class="block rounded bg-mantle m-2 p-2">
     <!--  Speed Slider  -->
-    <input type="number"
-           class="form-control-sm text-bg-dark text-light w-50"
-           on:change={changeSpeed}
-           min="0.1"
-           max="10"
-           value={speed}
-    />
-    <input type="range"
-           class="form-control-sm text-bg-dark text-light w-50"
-           on:change={changeSpeed}
-           min="0.1"
-           max="10"
-           value={speed}
-    />
+    <input type="number" class="rounded w-16 h-8" on:change={changeSpeed} min="0.1" max="2" step="0.1" value={$speed}/>
+    <input type="range" class="rounded w-32 h-8" on:change={changeSpeed} min="0.1" max="2" step="0.1" value={$speed}/>
   </div>
-</form>
+
+  <label class="rounded w-50 h-8">Cells alive: {$aliveCount}</label>
+</div>
 
 <style>
 </style>

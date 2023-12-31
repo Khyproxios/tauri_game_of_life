@@ -28,13 +28,13 @@ impl Board {
         y * self.width + x
     }
 
-    fn next_state(&self, x: usize, y: usize) -> bool {
+    fn next_state(&self, x: usize, y: usize, is_alive: bool) -> bool {
         let mut count = 0;
 
         let valid_left_x = x > 0;
-        let valid_right_x = self.width > x;
+        let valid_right_x = self.width - 1 > x;
         let valid_top_y = y > 0;
-        let valid_bottom_y = self.height > y;
+        let valid_bottom_y = self.height - 1 > y;
 
         if valid_left_x && valid_top_y {
             let index = self.get_index(x - 1, y - 1);
@@ -100,27 +100,57 @@ impl Board {
             }
         }
 
-        count > 3
+        if count == 2 {
+            println!("I think I might survive!");
+        }
+
+        // Any live cell with two or three live neighbours lives
+        // Any dead cell with exactly three live neighbours
+        // Any live cell with more than three live neighbours dies
+        // Any live cell with fewer than two live neighbours dies
+        (is_alive && 1 < count && count < 4) || count == 3
+    }
+
+    fn print_cells(&self) {
+        let cells_alive = self.cells.iter()
+            .filter(|&state| *state == true)
+            .count();
+        let cells_dead = self.cells.iter()
+            .filter(|&state| *state == false)
+            .count();
+
+        println!("Cells Alive: {}", cells_alive);
+        println!("Cells Dead:  {}", cells_dead);
     }
 
     pub fn update(&mut self) {
-        let mut next_states = Vec::with_capacity(self.width * self.height);
+        let mut next_states = vec![false; self.width * self.height];
 
-        for y in 0..self.height - 1 {
-            for x in 0..self.width - 1 {
+        for y in 0..self.height {
+            for x in 0..self.width {
                 let index = self.get_index(x, y);
 
-                next_states[index] = self.next_state(x, y);
+                next_states[index] = self.next_state(x, y, self.cells[index]);
             }
         }
 
-        for y in 0..self.height - 1 {
-            for x in 0..self.width - 1 {
+        for y in 0..self.height {
+            for x in 0..self.width {
                 let index = self.get_index(x, y);
 
                 self.cells[index] = next_states[index];
             }
         }
+
+        let cells_alive = next_states.iter()
+            .filter(|&state| *state == true)
+            .count();
+        let cells_dead = next_states.iter()
+            .filter(|&state| *state == false)
+            .count();
+
+        println!("Cells Alive: {}", cells_alive);
+        println!("Cells Dead:  {}", cells_dead);
     }
 
     pub fn reset(&mut self) {
@@ -131,11 +161,21 @@ impl Board {
                 self.cells[index] = false;
             }
         }
+
+        self.print_cells();
+    }
+
+    pub fn get_alive_count(&self) -> usize {
+        self.cells.iter()
+            .filter(|&state| *state == true)
+            .count()
     }
 
     pub fn toggle(&mut self, x: usize, y: usize) {
         let index = y * self.width + x;
 
         self.cells[index] = !self.cells[index];
+
+        self.print_cells();
     }
 }

@@ -13,7 +13,6 @@ pub struct Game {
 
 impl GameManager {
     pub fn new(game: Game) -> GameManager {
-        println!("Creating GameManager");
         GameManager {
             mutex: Mutex::new(game)
         }

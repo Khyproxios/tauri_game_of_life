@@ -9,6 +9,11 @@
     src: local('fonts/Ubuntu/UbuntuNerdFontPropo-regular.ttf');
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
     font-family: 'UbuntuNF', sans-serif;
+    overflow: hidden;
 }

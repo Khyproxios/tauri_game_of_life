@@ -1,14 +1,15 @@
 <script>
-  import Controls from "./lib/Controls.svelte";
-  import Board from "./lib/Board.svelte";
+    import './styles.css';
+    import Controls from "./lib/Controls.svelte";
+    import Board from "./lib/Board.svelte";
+    import {board} from "./store.js";
 </script>
 
-<main class="container-fluid h-100">
-  <div class="row h-100 ml-0">
+<main class="w-screen h-dvh mocha bg-crust flex flex-row">
+  <div class="w-1/5">
     <Controls />
-    <Board />
+  </div>
+  <div class="w-4/5">
+    <Board board={$board} />
   </div>
 </main>
-
-<style>
-</style>
