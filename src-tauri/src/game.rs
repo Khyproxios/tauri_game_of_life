@@ -5,6 +5,12 @@ pub struct Board {
     cells: Vec<bool>
 }
 
+#[derive(serde::Deserialize)]
+pub struct Vec2 {
+    pub x: usize,
+    pub y: usize
+}
+
 impl Board {
     pub fn new(width: usize, height: usize) -> Board {
         let cells: Vec<bool> = vec![false; width * height];
@@ -100,27 +106,11 @@ impl Board {
             }
         }
 
-        if count == 2 {
-            println!("I think I might survive!");
-        }
-
         // Any live cell with two or three live neighbours lives
         // Any dead cell with exactly three live neighbours
         // Any live cell with more than three live neighbours dies
         // Any live cell with fewer than two live neighbours dies
         (is_alive && 1 < count && count < 4) || count == 3
-    }
-
-    fn print_cells(&self) {
-        let cells_alive = self.cells.iter()
-            .filter(|&state| *state == true)
-            .count();
-        let cells_dead = self.cells.iter()
-            .filter(|&state| *state == false)
-            .count();
-
-        println!("Cells Alive: {}", cells_alive);
-        println!("Cells Dead:  {}", cells_dead);
     }
 
     pub fn update(&mut self) {
@@ -141,16 +131,6 @@ impl Board {
                 self.cells[index] = next_states[index];
             }
         }
-
-        let cells_alive = next_states.iter()
-            .filter(|&state| *state == true)
-            .count();
-        let cells_dead = next_states.iter()
-            .filter(|&state| *state == false)
-            .count();
-
-        println!("Cells Alive: {}", cells_alive);
-        println!("Cells Dead:  {}", cells_dead);
     }
 
     pub fn reset(&mut self) {
@@ -161,8 +141,12 @@ impl Board {
                 self.cells[index] = false;
             }
         }
+    }
 
-        self.print_cells();
+    pub fn resize(&mut self, width: usize, height: usize) {
+        self.width = width;
+        self.height = height;
+        self.cells = vec![false; width * height];
     }
 
     pub fn get_alive_count(&self) -> usize {
@@ -175,7 +159,5 @@ impl Board {
         let index = y * self.width + x;
 
         self.cells[index] = !self.cells[index];
-
-        self.print_cells();
     }
 }

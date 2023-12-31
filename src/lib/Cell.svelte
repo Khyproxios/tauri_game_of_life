@@ -12,7 +12,7 @@
             .then(async () => aliveCount.set(await invoke('get_alive_count')));
 </script>
 
-<div class="{isAlive ? 'alive' : 'dead'} {isAlive ? 'bg-peach' : 'bg-mantle'}"
+<div class="{isAlive ? 'alive' : 'dead'} {isAlive ? 'bg-peach' : 'bg-mantle'} grid-col-{x + 1} grid-row-{y + 1}"
      on:click={onCellClick}>
 </div>
 

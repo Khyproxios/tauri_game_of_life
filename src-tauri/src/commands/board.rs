@@ -1,23 +1,25 @@
 use tauri::State;
 
-use crate::{GameManager};
+use crate::{GameManager, game::Vec2};
 
-#[derive(serde::Deserialize)]
-pub struct Vec2 {
-    pub x: usize,
-    pub y: usize
-}
-
-#[tauri::command(rename_all = "snake_case")]
+#[tauri::command]
 pub fn toggle(game_manager: State<'_, GameManager>, position: Vec2) {
-    println!("Toggling Cell at <{}, {}>", position.x, position.y);
-
     game_manager
         .mutex
         .lock()
         .unwrap()
         .board
         .toggle(position.x, position.y);
+}
+
+#[tauri::command]
+pub fn resize_board(game_manager: State<'_, GameManager>, width: usize, height: usize) {
+    game_manager
+        .mutex
+        .lock()
+        .unwrap()
+        .board
+        .resize(width, height);
 }
 
 #[tauri::command]
